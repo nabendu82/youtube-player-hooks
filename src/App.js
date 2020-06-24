@@ -1,43 +1,32 @@
-import React, { Component } from 'react';
-import SearchBar from './components/search_bar';
-import YTSearch from 'youtube-api-search';
+import React, { useState, useEffect } from 'react';
 import VideoList from './components/video_list'
-import VideoDetail from './components/video_detail';
+import SearchBar from './components/search_bar'
+import VideoDetail from './components/video_detail'
+import YTSearch from 'youtube-api-search';
 const API_KEY = process.env.REACT_APP_API_KEY;
 
-class App extends Component {
-  constructor(props){
-    super(props);
+const App = () => {
+  const [videos, setVideos] = useState([]);
+  const [sldVideo, setSldVideo] = useState(null);
 
-    this.state = {
-        videos: [],
-        selectedVideo: null
-    };
+  useEffect(() => {
+    fetchResource('React Tutorials');
+  }, [])
 
-    this.videoSearch('React Tutorials');
-}
-
-videoSearch(searchTerm) {
-  YTSearch({key: API_KEY, term: searchTerm}, (data) => {
-    console.log(data);
-      this.setState({
-          videos: data,
-          selectedVideo: data[0]
+  const fetchResource = async (item) => {
+      await YTSearch({key: API_KEY, term: item}, (data) => {
+          setVideos(data);
+          setSldVideo(data[0])
       });
-  });
-
-}
-  render() {
-    return (
-      <div>
-        <SearchBar onSearchTermChange={searchTerm => this.videoSearch(searchTerm)}/>
-        <VideoDetail video={this.state.selectedVideo}/>
-        <VideoList
-          onVideoSelect={userSelected => this.setState({selectedVideo: userSelected})}
-          videos={this.state.videos} />
-      </div>
-    );
   }
+
+  return (
+    <div>
+      <SearchBar onSearchTermChange={searchTerm => fetchResource(searchTerm)}/>
+      <VideoDetail video={sldVideo}/>
+      <VideoList onVideoSelect={selected => setSldVideo(selected)} videos={videos} />
+    </div>
+  );
 }
 
 export default App;
